@@ -33,7 +33,7 @@ export default function LandingNav() {
           <a href="#how-it-works" className="text-sm text-white/60 hover:text-white transition-colors">How It Works</a>
           <a href="#earnings" className="text-sm text-white/60 hover:text-white transition-colors">Earnings</a>
           <a href="#faq" className="text-sm text-white/60 hover:text-white transition-colors">FAQ</a>
-          <Link href="/dashboard" className="text-sm text-white/60 hover:text-white transition-colors">Login</Link>
+          <Link href="/login" className="text-sm text-white/60 hover:text-white transition-colors">Login</Link>
           <a href="#payment" className="btn-primary text-sm py-2 px-5">Get Started — ₹29</a>
         </div>
         <button className="md:hidden p-2 text-white/60 hover:text-white" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">

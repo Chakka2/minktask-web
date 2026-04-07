@@ -51,12 +51,12 @@ export default function SupportPage() {
   return (
     <AppLayout>
       <div className="glass-card p-6 space-y-4">
-        <h1 className="text-2xl font-bold text-white">Support Bridge</h1>
-        <p className="text-sm text-white/50">Messages sync to Telegram and admin replies appear here instantly.</p>
+        <h1 className="text-2xl font-bold text-white">Support Chat</h1>
+        <p className="text-sm text-white/50">Messages and replies appear here in real-time.</p>
         <div className="space-y-2 max-h-[380px] overflow-auto rounded-xl p-3 bg-black/10">
           {messages.map((msg) => (
             <div key={msg.id} className={`p-2 rounded-lg text-sm ${msg.sender === 'admin' ? 'bg-indigo-500/20 text-indigo-100' : 'bg-white/10 text-white'}`}>
-              <b>{msg.sender === 'admin' ? 'Admin' : 'You'}:</b> {msg.message}
+              <b>{msg.sender === 'admin' ? 'Support' : 'You'}:</b> {msg.message}
             </div>
           ))}
         </div>

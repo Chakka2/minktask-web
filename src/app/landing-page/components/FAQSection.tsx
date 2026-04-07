@@ -5,11 +5,11 @@ import { ChevronDown } from 'lucide-react';
 
 const FAQS = [
   { id: 'faq-1', q: 'Is ₹29 a monthly fee?', a: 'No. It is a one-time entry payment. Your account unlocks after matching payment confirmation.' },
-  { id: 'faq-2', q: 'How much do I earn per referred reel sale?', a: 'You earn a flat ₹50 per successful referred reel bundle sale. Admin keeps ₹49.' },
+  { id: 'faq-2', q: 'How much do I earn per referred reel sale?', a: 'You earn a flat ₹50 per successful referred reel bundle sale.' },
   { id: 'faq-3', q: 'What is the minimum withdrawal amount?', a: 'You can withdraw a minimum of ₹50. A ₹2 processing fee applies per withdrawal request. Amount is paid to your UPI ID within 24 hours.' },
-  { id: 'faq-4', q: 'How does reel bundle commission work?', a: 'When someone buys a ₹99 bundle from your link, you earn ₹50 and owner keeps ₹49. This is a direct 1-level product commission.' },
+  { id: 'faq-4', q: 'How does reel bundle commission work?', a: 'When someone buys a ₹99 bundle from your link, you earn ₹50. This is a direct 1-level product commission.' },
   { id: 'faq-5', q: 'Do referrals still earn through entry network?', a: 'Yes. The 3-level entry network runs separately from bundle sales and follows its own payout structure.' },
-  { id: 'faq-6', q: 'Can admin reply to support from Telegram?', a: 'Yes. Support complaints are sent to Telegram, and admin replies sync back to website chat in real-time.' },
+  { id: 'faq-6', q: 'How do support replies work?', a: 'Support replies appear in your website chat in real-time.' },
 ];
 
 export default function FAQSection() {

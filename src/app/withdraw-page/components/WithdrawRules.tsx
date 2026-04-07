@@ -49,7 +49,7 @@ export default function WithdrawRules() {
       </div>
       <div className="p-4 rounded-xl" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
         <p className="text-xs font-semibold text-green-400 mb-1">Need Help?</p>
-        <p className="text-xs text-white/50 leading-relaxed">For withdrawal issues, contact support via Telegram. Mention your User ID and withdrawal request ID.</p>
+        <p className="text-xs text-white/50 leading-relaxed">For withdrawal issues, contact support from your dashboard and mention your User ID and request ID.</p>
       </div>
     </div>
   );

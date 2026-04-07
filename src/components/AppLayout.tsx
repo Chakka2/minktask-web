@@ -2,16 +2,18 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, Users, Link2, TrendingUp, Wallet, Menu, X, ChevronLeft, Bell, LogOut, IndianRupee, MessageCircle } from 'lucide-react';
-import { getClientUserId } from '@/lib/user';
+import { LayoutDashboard, Users, Link2, TrendingUp, Wallet, Menu, X, ChevronLeft, Bell, LogOut, IndianRupee, MessageCircle, ShoppingBag } from 'lucide-react';
+import { clearClientUserId, getClientUserId } from '@/lib/user';
+import { clearAuthUser, getAuthUser } from '@/lib/auth';
 
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Referrals', href: '/referral-page', icon: Users },
   { label: 'Reel Bundles', href: '/reel-bundles', icon: Link2 },
+  { label: 'Orders', href: '/orders', icon: ShoppingBag },
   { label: 'Earnings', href: '/earnings-page', icon: TrendingUp },
   { label: 'Withdraw', href: '/withdraw-page', icon: Wallet },
   { label: 'Support', href: '/support-page', icon: MessageCircle },
@@ -23,21 +25,47 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [profileEmail, setProfileEmail] = useState('member@mintytask.online');
+  const [authReady, setAuthReady] = useState(false);
 
   React.useEffect(() => {
     const userId = getClientUserId();
+    const auth = getAuthUser();
+    if (!auth) {
+      router.replace('/login');
+      return;
+    }
+    setProfileEmail(auth.email || 'member@mintytask.online');
+    setAuthReady(true);
     const poll = async () => {
       const res = await fetch(`/api/entry/status?userId=${userId}`);
       const data = await res.json();
-      setIsLocked(Boolean(data.isLocked));
+      if (typeof data?.isLocked === 'boolean') setIsLocked(data.isLocked);
     };
     poll();
     const timer = setInterval(poll, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [router]);
+
+  const onLogout = () => {
+    clearAuthUser();
+    clearClientUserId();
+    router.push('/landing-page');
+  };
+
+  if (!authReady) {
+    return (
+      <div className="page-bg min-h-screen flex items-center justify-center text-white/70">
+        Loading account...
+      </div>
+    );
+  }
+
+  const profileName = (profileEmail.split('@')[0] || 'member').replace(/[^a-zA-Z0-9]/g, ' ');
 
   return (
     <div className="page-bg flex min-h-screen">
@@ -111,10 +139,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 R
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">Rahul Sharma</p>
-                <p className="text-xs text-white/40 truncate">rahul@gmail.com</p>
+                <p className="text-sm font-semibold text-white truncate">{profileName}</p>
+                <p className="text-xs text-white/40 truncate">{profileEmail}</p>
               </div>
-              <LogOut size={15} className="text-white/30 hover:text-red-400 transition-colors flex-shrink-0" />
+              <button onClick={onLogout} className="p-1 rounded-md hover:bg-white/10">
+                <LogOut size={15} className="text-white/30 hover:text-red-400 transition-colors flex-shrink-0" />
+              </button>
             </div>
           ) : (
             <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-sm font-bold cursor-pointer">
@@ -187,10 +217,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl">
             <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-sm font-bold">R</div>
             <div>
-              <p className="text-sm font-semibold text-white">Rahul Sharma</p>
-              <p className="text-xs text-white/40">rahul@gmail.com</p>
+              <p className="text-sm font-semibold text-white">{profileName}</p>
+              <p className="text-xs text-white/40">{profileEmail}</p>
             </div>
           </div>
+          <button onClick={onLogout} className="w-full mt-2 text-xs text-white/50 hover:text-red-400 transition-colors">
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -209,7 +242,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </button>
             <div className="hidden lg:block">
               <p className="text-sm text-white/40">Welcome back,</p>
-              <p className="text-sm font-semibold text-white">Rahul Sharma</p>
+              <p className="text-sm font-semibold text-white">{profileName}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

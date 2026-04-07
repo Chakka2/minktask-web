@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, QrCode, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { getClientUserId } from '@/lib/user';
+import { getAuthUser } from '@/lib/auth';
+import { getClientUserId, getReferralCode } from '@/lib/user';
 import { ENTRY_VPA } from '@/lib/constants';
 
 const TIMER_SECONDS = 120;
@@ -16,6 +18,7 @@ function formatMmSs(total: number) {
 }
 
 export default function PaymentSection() {
+  const router = useRouter();
   const [expectedAmount, setExpectedAmount] = useState<number>(29.01);
   const [isLocked, setIsLocked] = useState(true);
   const [userId, setUserId] = useState('');
@@ -35,10 +38,11 @@ export default function PaymentSection() {
       try {
         const params = new URLSearchParams(window.location.search);
         const referredBy = params.get('ref');
+        const referralCode = getReferralCode();
         const res = await fetch('/api/entry/init', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: id, referredBy }),
+          body: JSON.stringify({ userId: id, referredBy, referralCode }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -89,6 +93,14 @@ export default function PaymentSection() {
     return () => clearInterval(id);
   }, [showQr]);
 
+  useEffect(() => {
+    if (isBusy || isLocked || !showQr) return;
+    const timer = setTimeout(() => {
+      router.push('/dashboard');
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [isBusy, isLocked, showQr, router]);
+
   const upiLink = `upi://pay?pa=${ENTRY_VPA}&pn=EarnHub&am=${expectedAmount.toFixed(
     2
   )}&cu=INR&tn=Entry-${userId || 'device'}`;
@@ -119,13 +131,13 @@ export default function PaymentSection() {
           toast.error(
             typeof data?.error === 'string'
               ? data.error
-              : 'Could not notify admin (check server / Firebase). Your QR is still valid for payment.'
+              : 'Could not sync payment request right now. Your QR is still ready.'
           );
           return;
         }
-        toast.success('Admin notified. Check Telegram for Approve / Deny.');
+        toast.success('Payment request received. Access updates automatically after confirmation.');
       } catch {
-        toast.error('Network error notifying admin. Your QR is still valid — try again or contact support.');
+        toast.error('Network error while syncing payment request. Your QR is still ready.');
       } finally {
         setNotifyLoading(false);
       }
@@ -133,6 +145,7 @@ export default function PaymentSection() {
   };
 
   if (!isLocked && !isBusy) {
+    const authUser = typeof window !== 'undefined' ? getAuthUser() : null;
     return (
       <section id="payment" className="py-20 px-4">
         <div className="max-w-md mx-auto text-center">
@@ -142,8 +155,8 @@ export default function PaymentSection() {
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Entry Confirmed</h3>
             <p className="text-sm text-white/50 mb-6">Your account is unlocked and active.</p>
-            <a href="/dashboard" className="btn-primary flex items-center justify-center gap-2">
-              Open Dashboard
+            <a href={authUser ? '/dashboard' : '/signup'} className="btn-primary flex items-center justify-center gap-2">
+              {authUser ? 'Open Dashboard' : 'Create Account'}
             </a>
           </div>
         </div>
@@ -158,8 +171,8 @@ export default function PaymentSection() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Secure Account Activation</h2>
           <p className="text-white/50 text-lg">
             {showQr
-              ? 'Complete payment for the amount shown. Your access is enabled after verification.'
-              : 'When you are ready, open your payment QR. An admin alert is sent only at that moment.'}
+              ? 'Complete payment for the amount shown. Access is enabled as soon as payment is confirmed.'
+              : 'When you are ready, open your payment QR and pay the exact amount shown.'}
           </p>
         </div>
 
@@ -229,7 +242,7 @@ export default function PaymentSection() {
                 {notifyLoading && (
                   <p className="text-xs text-white/45 mb-2 flex items-center justify-center gap-2">
                     <Loader2 size={14} className="animate-spin shrink-0" />
-                    Notifying admin…
+                    Syncing payment request…
                   </p>
                 )}
                 <p className="text-3xl font-bold gradient-text font-mono tabular-nums mb-2">₹{expectedAmount.toFixed(2)}</p>
@@ -241,9 +254,9 @@ export default function PaymentSection() {
             <h3 className="text-lg font-bold text-white mb-6">How it works</h3>
             {[
               'Tap Pay with QR only when you are ready to pay.',
-              'We notify the admin with this exact amount and Approve / Deny actions.',
-              'After approval, your account unlocks automatically within a few seconds.',
-              'Use any UPI app to pay the amount shown on the QR.',
+              'Use any UPI app to pay the exact amount shown on screen.',
+              'After confirmation, your account unlocks automatically within a few seconds.',
+              'If payment is denied, your access remains locked.',
             ].map((text, idx) => (
               <div key={idx} className="flex items-start gap-4">
                 <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">

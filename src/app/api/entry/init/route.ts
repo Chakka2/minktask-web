@@ -9,7 +9,7 @@ function buildAmount(seed: number) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, referredBy } = await req.json();
+    const { userId, referredBy, referralCode } = await req.json();
     if (!userId) {
       return NextResponse.json({ error: 'userId required' }, { status: 400 });
     }
@@ -35,10 +35,34 @@ export async function POST(req: NextRequest) {
     const expectedAmount = buildAmount(randomPaise);
     const isConfirmed = paymentSnap.exists && paymentSnap.data()?.status === 'confirmed';
 
+    const userSnap = await userRef.get();
+    const existingRef = userSnap.data()?.referredBy ?? null;
+    let resolvedRef: string | null = null;
+    if (typeof referredBy === 'string' && referredBy.trim()) {
+      const incoming = referredBy.trim();
+      if (incoming === userId) {
+        resolvedRef = null;
+      } else if (/^\d{7}$/.test(incoming)) {
+        const refSnap = await adminDb
+          .collection('users')
+          .where('referralCode', '==', incoming)
+          .limit(1)
+          .get();
+        resolvedRef = refSnap.empty ? null : String(refSnap.docs[0].id);
+      } else {
+        resolvedRef = incoming;
+      }
+    }
+    const nextRef = existingRef || resolvedRef;
+
     await userRef.set(
       {
         userId,
-        referredBy: referredBy || null,
+        referredBy: nextRef,
+        referralCode:
+          typeof referralCode === 'string' && /^\d{7}$/.test(referralCode)
+            ? referralCode
+            : userSnap.data()?.referralCode ?? null,
         isLocked: !isConfirmed,
         createdAt: FieldValue.serverTimestamp(),
       },

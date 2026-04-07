@@ -38,16 +38,14 @@ async function handleAudit(callbackData: string, callbackId: string) {
   );
 }
 
-async function handleEntryApprove(token: string, callbackId: string, chatId: string, messageId: number) {
+async function handleEntryApprove(token: string, chatId: string, messageId: number) {
   const ref = adminDb.collection('entryPayPending').doc(token);
   const snap = await ref.get();
   if (!snap.exists) {
-    await answerCallbackQuery(callbackId, 'Request expired or invalid');
     return;
   }
   const data = snap.data()!;
   if (data.status !== 'pending') {
-    await answerCallbackQuery(callbackId, 'Already handled');
     return;
   }
   const userId = data.userId as string;
@@ -61,7 +59,6 @@ async function handleEntryApprove(token: string, callbackId: string, chatId: str
     source: 'admin_telegram',
   });
   await adminDb.collection('users').doc(userId).set({ isLocked: false }, { merge: true });
-  await answerCallbackQuery(callbackId, 'Approved');
   await editTelegramMessage(
     chatId,
     messageId,
@@ -69,21 +66,29 @@ async function handleEntryApprove(token: string, callbackId: string, chatId: str
   );
 }
 
-async function handleEntryDeny(token: string, callbackId: string, chatId: string, messageId: number) {
+async function handleEntryDeny(token: string, chatId: string, messageId: number) {
   const ref = adminDb.collection('entryPayPending').doc(token);
   const snap = await ref.get();
   if (!snap.exists) {
-    await answerCallbackQuery(callbackId, 'Request expired or invalid');
     return;
   }
   const data = snap.data()!;
   if (data.status !== 'pending') {
-    await answerCallbackQuery(callbackId, 'Already handled');
     return;
   }
   const userId = data.userId as string;
   await ref.update({ status: 'denied', decidedAt: FieldValue.serverTimestamp() });
-  await answerCallbackQuery(callbackId, 'Denied');
+  await adminDb.collection('users').doc(userId).set({ isLocked: true }, { merge: true });
+  await adminDb.collection('payments').doc(userId).set(
+    {
+      userId,
+      amount: Number(data.amount),
+      status: 'denied',
+      deniedAt: FieldValue.serverTimestamp(),
+      source: 'admin_telegram',
+    },
+    { merge: true }
+  );
   await editTelegramMessage(
     chatId,
     messageId,
@@ -113,14 +118,19 @@ export async function POST(req: NextRequest) {
       const chatId = String(cq.message?.chat?.id ?? '');
       const messageId = Number(cq.message?.message_id);
 
+      // Acknowledge immediately so Telegram button never keeps spinning.
+      await answerCallbackQuery(cq.id, 'Processing...');
+
       if (data.startsWith('audit:')) {
         await handleAudit(data, cq.id);
       } else if (data.startsWith('eap:')) {
         const token = data.slice(4);
-        await handleEntryApprove(token, cq.id, chatId, messageId);
+        await handleEntryApprove(token, chatId, messageId);
       } else if (data.startsWith('edn:')) {
         const token = data.slice(4);
-        await handleEntryDeny(token, cq.id, chatId, messageId);
+        await handleEntryDeny(token, chatId, messageId);
+      } else {
+        await editTelegramMessage(chatId, messageId, '<b>Unknown action</b>');
       }
       return NextResponse.json({ ok: true });
     }

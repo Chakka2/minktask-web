@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'EarnHub — Reel Bundle Network',
-  description: '₹29 locked entry payment plus Reel Bundle referrals, withdrawals, and Telegram admin operations.',
+  description: '₹29 locked entry payment plus reel bundle referrals and withdrawals.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },
