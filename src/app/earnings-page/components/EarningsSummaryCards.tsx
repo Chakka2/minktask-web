@@ -1,13 +1,12 @@
 import React from 'react';
 import { IndianRupee, Users, MousePointer, Calendar } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 // Backend: replace with aggregated earnings from Firestore transactions
 const SUMMARY = [
   { id: 'es-total', label: 'Total Lifetime Earnings', value: '₹486', sub: 'Since joining Mar 2026', icon: IndianRupee, color: '#6366f1', bg: 'rgba(99,102,241,0.15)', positive: true },
   { id: 'es-referral', label: 'Referral Earnings', value: '₹138', sub: 'From 34 referrals (L1+L2+L3)', icon: Users, color: '#818cf8', bg: 'rgba(129,140,248,0.12)', positive: true },
-  { id: 'es-affiliate', label: 'Affiliate Earnings', value: '₹84', sub: '2 distributions received', icon: MousePointer, color: '#22d3ee', bg: 'rgba(34,211,238,0.12)', positive: true },
+  { id: 'es-bundle', label: 'Bundle Sale Earnings', value: '₹84', sub: 'From referred reel bundle sales', icon: MousePointer, color: '#22d3ee', bg: 'rgba(34,211,238,0.12)', positive: true },
   { id: 'es-this-month', label: 'This Month', value: '₹58', sub: 'April 2026 so far', icon: Calendar, color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', positive: null },
 ];
 

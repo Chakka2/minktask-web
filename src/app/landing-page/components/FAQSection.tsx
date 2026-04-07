@@ -4,22 +4,22 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 const FAQS = [
-  { id: 'faq-1', q: 'Is ₹29 a monthly fee?', a: 'No — it is a one-time payment. Pay once and access all features for life. No hidden charges, no subscription.' },
-  { id: 'faq-2', q: 'When do I receive my referral earnings?', a: 'Referral earnings are credited to your wallet instantly when your referral\'s payment is approved. Usually within 30 minutes.' },
+  { id: 'faq-1', q: 'Is ₹29 a monthly fee?', a: 'No. It is a one-time entry payment. Your account unlocks after matching payment confirmation.' },
+  { id: 'faq-2', q: 'How much do I earn per referred reel sale?', a: 'You earn a flat ₹50 per successful referred reel bundle sale. Admin keeps ₹49.' },
   { id: 'faq-3', q: 'What is the minimum withdrawal amount?', a: 'You can withdraw a minimum of ₹50. A ₹2 processing fee applies per withdrawal request. Amount is paid to your UPI ID within 24 hours.' },
-  { id: 'faq-4', q: 'How does the Amazon affiliate sharing work?', a: 'At the end of each month, 50% of the platform\'s total Amazon affiliate earnings are distributed among all users proportional to their click share.' },
-  { id: 'faq-5', q: 'Do my referrals need to pay ₹29 too?', a: 'Yes. Referral earnings are only credited when your referred user completes the ₹29 payment and gets approved. Unpaid signups do not count.' },
-  { id: 'faq-6', q: 'How many levels of referrals can I earn from?', a: 'You earn from 3 levels deep: ₹20 from Level 1 (direct), ₹2 from Level 2, and ₹1 from Level 3. This compounds as your network grows.' },
+  { id: 'faq-4', q: 'How does reel bundle commission work?', a: 'When someone buys a ₹99 bundle from your link, you earn ₹50 and owner keeps ₹49. This is a direct 1-level product commission.' },
+  { id: 'faq-5', q: 'Do referrals still earn through entry network?', a: 'Yes. The 3-level entry network runs separately from bundle sales and follows its own payout structure.' },
+  { id: 'faq-6', q: 'Can admin reply to support from Telegram?', a: 'Yes. Support complaints are sent to Telegram, and admin replies sync back to website chat in real-time.' },
 ];
 
 export default function FAQSection() {
   const [openId, setOpenId] = useState<string | null>('faq-1');
 
   return (
-    <section id="faq" className="py-20 px-4">
+    <section id="faq" className="py-28 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Frequently Asked Questions</h2>
         </div>
         <div className="space-y-3">
           {FAQS?.map((faq) => (

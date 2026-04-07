@@ -13,19 +13,19 @@ import {
 
 // Backend: replace with monthly aggregated earnings from Firestore
 const MONTHLY_DATA = [
-  { month: 'Jan', referral: 0, affiliate: 0, total: 0 },
-  { month: 'Feb', referral: 0, affiliate: 0, total: 0 },
-  { month: 'Mar', referral: 126, affiliate: 42, total: 168 },
-  { month: 'Apr', referral: 12, affiliate: 0, total: 12 },
+  { month: 'Jan', referral: 0, bundle: 0, total: 0 },
+  { month: 'Feb', referral: 0, bundle: 0, total: 0 },
+  { month: 'Mar', referral: 126, bundle: 42, total: 168 },
+  { month: 'Apr', referral: 12, bundle: 0, total: 12 },
 ];
 
 const WEEKLY_DATA = [
-  { period: 'Mar 3', referral: 14, affiliate: 0, total: 14 },
-  { period: 'Mar 10', referral: 26, affiliate: 0, total: 26 },
-  { period: 'Mar 17', referral: 38, affiliate: 42, total: 80 },
-  { period: 'Mar 24', referral: 48, affiliate: 0, total: 48 },
-  { period: 'Mar 31', referral: 12, affiliate: 0, total: 12 },
-  { period: 'Apr 1', referral: 12, affiliate: 0, total: 12 },
+  { period: 'Mar 3', referral: 14, bundle: 0, total: 14 },
+  { period: 'Mar 10', referral: 26, bundle: 0, total: 26 },
+  { period: 'Mar 17', referral: 38, bundle: 42, total: 80 },
+  { period: 'Mar 24', referral: 48, bundle: 0, total: 48 },
+  { period: 'Mar 31', referral: 12, bundle: 0, total: 12 },
+  { period: 'Apr 1', referral: 12, bundle: 0, total: 12 },
 ];
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number; name: string; color: string }[]; label?: string }) => {
@@ -55,7 +55,7 @@ export default function EarningsBreakdownChart() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-base font-semibold text-white">Earnings Over Time</h3>
-          <p className="text-xs text-white/40 mt-0.5">Referral + Affiliate breakdown</p>
+          <p className="text-xs text-white/40 mt-0.5">Referral + Reel Bundle breakdown</p>
         </div>
         <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
           {(['monthly', 'weekly'] as const).map((v) => (
@@ -73,7 +73,7 @@ export default function EarningsBreakdownChart() {
       <div className="flex items-center gap-4 mb-4">
         {[
           { key: 'referral', color: '#6366f1', label: 'Referral' },
-          { key: 'affiliate', color: '#22d3ee', label: 'Affiliate' },
+          { key: 'bundle', color: '#22d3ee', label: 'Bundle Sale' },
         ].map((item) => (
           <div key={`legend-${item.key}`} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
@@ -99,7 +99,7 @@ export default function EarningsBreakdownChart() {
           <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
           <Tooltip content={<CustomTooltip />} />
           <Area type="monotone" dataKey="referral" stroke="#6366f1" strokeWidth={2} fill="url(#gradEarnRef)" />
-          <Area type="monotone" dataKey="affiliate" stroke="#22d3ee" strokeWidth={2} fill="url(#gradEarnAff)" />
+          <Area type="monotone" dataKey="bundle" stroke="#22d3ee" strokeWidth={2} fill="url(#gradEarnAff)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

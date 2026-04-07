@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Wallet, IndianRupee, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getClientUserId } from '@/lib/user';
+import { WITHDRAW_FEE, WITHDRAW_MIN } from '@/lib/constants';
 
 interface WithdrawFormData {
   amount: number;
@@ -11,10 +13,9 @@ interface WithdrawFormData {
   confirmUpiId: string;
 }
 
-// Backend: replace with actual wallet balance from Firestore
 const AVAILABLE_BALANCE = 248;
-const MIN_WITHDRAWAL = 50;
-const FEE = 2;
+const MIN_WITHDRAWAL = WITHDRAW_MIN;
+const FEE = WITHDRAW_FEE;
 
 export default function WithdrawForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,11 +34,24 @@ export default function WithdrawForm() {
 
   const onSubmit = async (data: WithdrawFormData) => {
     setIsSubmitting(true);
-    // Backend: create withdrawal document in Firestore, trigger Telegram bot notification
-    await new Promise((r) => setTimeout(r, 1500));
+    const userId = getClientUserId();
+    const res = await fetch('/api/withdraw/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        amount: Number(data.amount),
+        upiId: data.upiId,
+      }),
+    });
+    const json = await res.json();
     setIsSubmitting(false);
+    if (!res.ok) {
+      toast.error(json.error || 'Withdrawal request failed');
+      return;
+    }
     setSubmitted(true);
-    toast.success(`Withdrawal of ₹${netAmount} requested successfully! Processing within 24 hours.`);
+    toast.success(`Withdrawal submitted. Net payout after ₹2 fee: ₹${json.netAmount.toFixed(2)}.`);
     reset();
     setTimeout(() => setSubmitted(false), 4000);
   };

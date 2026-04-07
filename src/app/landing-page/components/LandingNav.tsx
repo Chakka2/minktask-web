@@ -18,12 +18,16 @@ export default function LandingNav() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'border-b border-white/8' : ''}`}
-      style={scrolled ? { background: 'rgba(10,14,30,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' } : {}}
+      style={
+        scrolled
+          ? { background: 'rgba(10,14,30,0.78)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }
+          : {}
+      }
     >
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AppLogo size={32} />
-          <span className="font-bold text-xl gradient-text">Mintask</span>
+          <span className="font-bold text-xl gradient-text">EarnHub</span>
         </div>
         <div className="hidden md:flex items-center gap-6">
           <a href="#how-it-works" className="text-sm text-white/60 hover:text-white transition-colors">How It Works</a>

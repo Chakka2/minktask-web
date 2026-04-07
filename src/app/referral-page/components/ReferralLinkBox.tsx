@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 // Backend: replace with current user's referralCode from Firestore
 const REFERRAL_CODE = 'RAHUL8423';
-const REFERRAL_LINK = `https://mintask.in/join?ref=${REFERRAL_CODE}`;
+const REFERRAL_LINK = `https://earnhub.in/join?ref=${REFERRAL_CODE}`;
 
 export default function ReferralLinkBox() {
   const [copied, setCopied] = useState(false);
@@ -20,12 +20,12 @@ export default function ReferralLinkBox() {
   };
 
   const whatsappShare = () => {
-    const msg = encodeURIComponent(`🚀 Join Mintask and start earning! Pay just ₹29 once and earn through referrals + Amazon affiliate. Use my link: ${REFERRAL_LINK}`);
+    const msg = encodeURIComponent(`🚀 Join EarnHub and start earning! Pay ₹29 entry and earn through referrals + reel bundle sales. Use my link: ${REFERRAL_LINK}`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 
   const telegramShare = () => {
-    const msg = encodeURIComponent(`Join Mintask — earn with referrals + affiliate! ${REFERRAL_LINK}`);
+    const msg = encodeURIComponent(`Join EarnHub — earn with referrals + reel bundles! ${REFERRAL_LINK}`);
     window.open(`https://t.me/share/url?url=${encodeURIComponent(REFERRAL_LINK)}&text=${msg}`, '_blank');
   };
 

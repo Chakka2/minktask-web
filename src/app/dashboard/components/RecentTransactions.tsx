@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 // Backend: replace with Firestore transactions query ordered by createdAt desc, limit 6
 const TRANSACTIONS = [
   { id: 'txn-001', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Priya Kapoor joined', time: '2 hours ago' },
-  { id: 'txn-002', type: 'credit', source: 'affiliate', level: null, amount: 42, desc: 'Monthly affiliate distribution — March', time: 'Yesterday' },
+  { id: 'txn-002', type: 'credit', source: 'bundle', level: null, amount: 42, desc: 'Reel bundle commission — March', time: 'Yesterday' },
   { id: 'txn-003', type: 'credit', source: 'referral', level: 2, amount: 2, desc: 'L2 referral — Amit Singh joined', time: 'Yesterday' },
   { id: 'txn-004', type: 'debit', source: 'withdrawal', level: null, amount: -150, desc: 'Withdrawal to UPI — rahul@upi', time: 'Mar 30' },
   { id: 'txn-005', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Sunita Rao joined', time: 'Mar 28' },
@@ -14,7 +14,7 @@ const TRANSACTIONS = [
 
 const SOURCE_BADGE: Record<string, { label: string; bg: string; color: string }> = {
   referral: { label: 'Referral', bg: 'rgba(99,102,241,0.15)', color: '#a5b4fc' },
-  affiliate: { label: 'Affiliate', bg: 'rgba(34,211,238,0.12)', color: '#67e8f9' },
+  bundle: { label: 'Bundle Sale', bg: 'rgba(34,211,238,0.12)', color: '#67e8f9' },
   withdrawal: { label: 'Withdrawal', bg: 'rgba(239,68,68,0.12)', color: '#fca5a5' },
 };
 

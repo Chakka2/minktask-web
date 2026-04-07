@@ -1,142 +1,138 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { CheckCircle, Copy, QrCode, Zap, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { CheckCircle, QrCode, Loader2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
+import { getClientUserId } from '@/lib/user';
+import { ENTRY_VPA } from '@/lib/constants';
 
-const UPI_ID = 'mintask@upi';
+const TIMER_SECONDS = 120;
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
+function formatMmSs(total: number) {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 export default function PaymentSection() {
-  const [copied, setCopied] = useState(false);
-  const [referralCode, setReferralCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-
-  // Developer bypass check
-  const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS === 'true';
+  const [expectedAmount, setExpectedAmount] = useState<number>(29.01);
+  const [isLocked, setIsLocked] = useState(true);
+  const [userId, setUserId] = useState('');
+  const [isBusy, setIsBusy] = useState(true);
+  const [initFailed, setInitFailed] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS);
+  const [notifyLoading, setNotifyLoading] = useState(false);
 
   useEffect(() => {
-    // Capture referral code from URL query param
-    const params = new URLSearchParams(window.location.search);
-    const ref = params.get('ref');
-    if (ref) {
-      setReferralCode(ref);
-      // Persist referral code in sessionStorage so it survives page navigation
-      sessionStorage.setItem('mintask_ref', ref);
-    } else {
-      const stored = sessionStorage.getItem('mintask_ref');
-      if (stored) setReferralCode(stored);
-    }
+    const id = getClientUserId();
+    setUserId(id);
 
-    // Load Razorpay script
-    if (!document.getElementById('razorpay-script')) {
-      const script = document.createElement('script');
-      script.id = 'razorpay-script';
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
+    const init = async () => {
+      setIsBusy(true);
+      setInitFailed(false);
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const referredBy = params.get('ref');
+        const res = await fetch('/api/entry/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: id, referredBy }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setInitFailed(true);
+          toast.error(data?.error || 'Could not load your personalised amount. You can still continue; try refreshing if this persists.');
+        } else {
+          setExpectedAmount(Number(data.expectedAmount ?? 29.01));
+          if (typeof data.isLocked === 'boolean') setIsLocked(data.isLocked);
+        }
+      } catch {
+        setInitFailed(true);
+        toast.error('Network error loading payment setup. You can still open the QR.');
+      } finally {
+        setIsBusy(false);
+      }
+    };
+    init();
   }, []);
 
-  const handleCopyUPI = () => {
-    navigator.clipboard?.writeText(UPI_ID)?.then(() => {
-      setCopied(true);
-      toast?.success('UPI ID copied!');
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
+  const pollStatus = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/entry/status?userId=${encodeURIComponent(userId)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || typeof data.isLocked !== 'boolean') return;
+      setIsLocked(data.isLocked);
+    } catch {
+      /* ignore — do not flip to unlocked on network/HTML error */
+    }
+  }, [userId]);
 
-  const handleRazorpayPayment = async () => {
-    if (DEV_BYPASS) {
-      toast.success('Dev bypass active — access granted!');
-      setIsPaid(true);
+  useEffect(() => {
+    const ms = showQr ? 3000 : 8000;
+    const timer = setInterval(pollStatus, ms);
+    return () => clearInterval(timer);
+  }, [pollStatus, showQr]);
+
+  useEffect(() => {
+    if (!showQr) return;
+    setSecondsLeft(TIMER_SECONDS);
+    const started = Date.now();
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - started) / 1000);
+      const left = Math.max(0, TIMER_SECONDS - elapsed);
+      setSecondsLeft(left);
+      if (left <= 0) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [showQr]);
+
+  const upiLink = `upi://pay?pa=${ENTRY_VPA}&pn=EarnHub&am=${expectedAmount.toFixed(
+    2
+  )}&cu=INR&tn=Entry-${userId || 'device'}`;
+
+  const handlePayWithQr = () => {
+    if (showQr) return;
+    const id = userId || getClientUserId();
+    if (!id) {
+      toast.error('Could not identify this device. Please allow storage and refresh.');
       return;
     }
+    if (id !== userId) setUserId(id);
 
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 2900, currency: 'INR', referralCode }),
-      });
+    // Same as the old home-screen flow: show QR and timer immediately (no API wait).
+    setSecondsLeft(TIMER_SECONDS);
+    setShowQr(true);
 
-      if (!res.ok) {
-        toast.error('Could not initiate payment. Please try again.');
-        setIsLoading(false);
-        return;
+    setNotifyLoading(true);
+    void (async () => {
+      try {
+        const res = await fetch('/api/entry/pay-started', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: id, amount: expectedAmount }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast.error(
+            typeof data?.error === 'string'
+              ? data.error
+              : 'Could not notify admin (check server / Firebase). Your QR is still valid for payment.'
+          );
+          return;
+        }
+        toast.success('Admin notified. Check Telegram for Approve / Deny.');
+      } catch {
+        toast.error('Network error notifying admin. Your QR is still valid — try again or contact support.');
+      } finally {
+        setNotifyLoading(false);
       }
-
-      const { orderId, amount, currency, keyId } = await res.json();
-
-      const options = {
-        key: keyId,
-        amount,
-        currency,
-        name: 'Mintask',
-        description: 'Lifetime Access — ₹29',
-        order_id: orderId,
-        handler: async (response: any) => {
-          try {
-            const verifyRes = await fetch('/api/payment/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                referralCode,
-              }),
-            });
-
-            const result = await verifyRes.json();
-            if (result.success) {
-              toast.success('Payment successful! Welcome to Mintask 🎉');
-              setIsPaid(true);
-              sessionStorage.removeItem('mintask_ref');
-            } else {
-              toast.error('Payment verification failed. Contact support.');
-            }
-          } catch {
-            toast.error('Verification error. Please contact support.');
-          }
-        },
-        prefill: {
-          name: '',
-          email: '',
-          contact: '',
-        },
-        notes: {
-          referral_code: referralCode,
-        },
-        theme: {
-          color: '#6366f1',
-        },
-        modal: {
-          ondismiss: () => {
-            setIsLoading(false);
-            toast('Payment cancelled.');
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-      setIsLoading(false);
-    } catch (err) {
-      console.error(err);
-      toast.error('Something went wrong. Please try again.');
-      setIsLoading(false);
-    }
+    })();
   };
 
-  if (isPaid) {
+  if (!isLocked && !isBusy) {
     return (
       <section id="payment" className="py-20 px-4">
         <div className="max-w-md mx-auto text-center">
@@ -144,10 +140,10 @@ export default function PaymentSection() {
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(34,197,94,0.15)' }}>
               <CheckCircle size={36} className="text-green-400" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">You're In! 🎉</h3>
-            <p className="text-sm text-white/50 mb-6">Your account is now active. Start earning with Mintask.</p>
+            <h3 className="text-xl font-bold text-white mb-2">Entry Confirmed</h3>
+            <p className="text-sm text-white/50 mb-6">Your account is unlocked and active.</p>
             <a href="/dashboard" className="btn-primary flex items-center justify-center gap-2">
-              Go to Dashboard
+              Open Dashboard
             </a>
           </div>
         </div>
@@ -159,94 +155,103 @@ export default function PaymentSection() {
     <section id="payment" className="py-20 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Join for Just ₹29</h2>
-          <p className="text-white/50 text-lg">One-time payment. Lifetime access to all features.</p>
-          {referralCode && (
-            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}>
-              <span className="text-white/60">Referred by:</span>
-              <span className="font-bold font-mono text-blue-400">{referralCode}</span>
-            </div>
-          )}
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Secure Account Activation</h2>
+          <p className="text-white/50 text-lg">
+            {showQr
+              ? 'Complete payment for the amount shown. Your access is enabled after verification.'
+              : 'When you are ready, open your payment QR. An admin alert is sent only at that moment.'}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          {/* Razorpay Pay Button */}
-          <div className="glass-card p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(99,102,241,0.15)' }}>
-              <Zap size={32} className="text-indigo-400" />
+          <div
+            className="relative z-10 p-8 text-center rounded-3xl animate-fade-in-up"
+            style={{
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))',
+              border: '1px solid rgba(255,255,255,0.14)',
+              boxShadow: '0 16px 40px rgba(4, 10, 30, 0.35)',
+              backdropFilter: 'blur(16px)',
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(99,102,241,0.12)' }}>
+              <QrCode size={32} className="text-indigo-400" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Pay Securely with Razorpay</h3>
-            <p className="text-sm text-white/50 mb-6">UPI, Cards, Net Banking, Wallets — all supported</p>
-            <p className="text-3xl font-bold gradient-text font-mono tabular-nums mb-6">₹29.00</p>
-            <button
-              onClick={handleRazorpayPayment}
-              disabled={isLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2 text-base disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ minHeight: '52px' }}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Opening Payment...
-                </>
-              ) : DEV_BYPASS ? (
-                <>
-                  <Zap size={18} />
-                  Dev Bypass — Skip Payment
-                </>
-              ) : (
-                <>
-                  <Zap size={18} />
-                  Pay ₹29 & Get Access
-                </>
-              )}
-            </button>
-            <p className="text-xs text-white/30 mt-3">Secured by Razorpay · 256-bit SSL</p>
 
-            {/* Manual UPI fallback */}
-            <div className="mt-6 pt-6 border-t border-white/8">
-              <p className="text-xs text-white/40 mb-3">Or pay manually via UPI</p>
-              <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <QrCode size={14} className="text-white/30 flex-shrink-0" />
-                <span className="flex-1 text-sm text-white font-mono">{UPI_ID}</span>
-                <button onClick={handleCopyUPI} className="p-1.5 rounded-lg hover:bg-white/10 transition-all text-white/50 hover:text-white" aria-label="Copy UPI ID">
-                  {copied ? <CheckCircle size={14} className="text-green-400" /> : <Copy size={14} />}
+            {!showQr ? (
+              <>
+                <p className="text-3xl font-bold gradient-text font-mono tabular-nums mb-2">₹{expectedAmount.toFixed(2)}</p>
+                <p className="text-sm text-white/45 mb-6">Your payable amount for this device.</p>
+                <button
+                  type="button"
+                  onClick={handlePayWithQr}
+                  className="btn-primary w-full max-w-xs mx-auto flex items-center justify-center gap-2"
+                >
+                  Pay with QR
                 </button>
-              </div>
-            </div>
+                {initFailed && (
+                  <p className="text-xs text-white/40 mt-3 max-w-xs mx-auto leading-relaxed">
+                    We couldn&apos;t sync your personalised amount yet. The figure shown may be a placeholder—refresh when
+                    you&apos;re online, or use Support if you&apos;ve already paid.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-white/50">Time remaining</span>
+                  <span
+                    className="text-lg font-mono font-bold tabular-nums px-3 py-1 rounded-xl"
+                    style={{
+                      background: secondsLeft <= 30 ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)',
+                      color: secondsLeft <= 30 ? '#fca5a5' : '#a5b4fc',
+                    }}
+                  >
+                    {formatMmSs(secondsLeft)}
+                  </span>
+                </div>
+                <div
+                  className="mx-auto mb-5 rounded-2xl p-3 w-fit inline-block"
+                  style={{
+                    background: 'rgba(255,255,255,0.92)',
+                    boxShadow: '0 10px 30px rgba(8, 15, 35, 0.2)',
+                  }}
+                >
+                  <QRCodeSVG
+                    value={upiLink}
+                    size={260}
+                    level="M"
+                    bgColor="#ffffff"
+                    fgColor="#0f172a"
+                    className="rounded-xl block"
+                    title="UPI payment QR"
+                  />
+                </div>
+                {notifyLoading && (
+                  <p className="text-xs text-white/45 mb-2 flex items-center justify-center gap-2">
+                    <Loader2 size={14} className="animate-spin shrink-0" />
+                    Notifying admin…
+                  </p>
+                )}
+                <p className="text-3xl font-bold gradient-text font-mono tabular-nums mb-2">₹{expectedAmount.toFixed(2)}</p>
+              </>
+            )}
           </div>
 
-          {/* Steps */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white mb-6">How It Works</h3>
+          <div className="space-y-4 animate-fade-in-up stagger-1">
+            <h3 className="text-lg font-bold text-white mb-6">How it works</h3>
             {[
-              { step: '1', text: 'Click "Pay ₹29 & Get Access" above' },
-              { step: '2', text: 'Complete payment via Razorpay (UPI, Card, etc.)' },
-              { step: '3', text: 'Your account is activated instantly after payment' },
-              { step: '4', text: 'Start earning with referrals and affiliate links!' },
-            ]?.map((item) => (
-              <div key={`pay-step-${item?.step}`} className="flex items-start gap-4">
+              'Tap Pay with QR only when you are ready to pay.',
+              'We notify the admin with this exact amount and Approve / Deny actions.',
+              'After approval, your account unlocks automatically within a few seconds.',
+              'Use any UPI app to pay the amount shown on the QR.',
+            ].map((text, idx) => (
+              <div key={idx} className="flex items-start gap-4">
                 <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                  {item?.step}
+                  {idx + 1}
                 </div>
-                <p className="text-sm text-white/70 pt-1">{item?.text}</p>
+                <p className="text-sm text-white/70 pt-1">{text}</p>
               </div>
             ))}
-
-            <div className="mt-8 p-4 rounded-xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle size={16} className="text-green-400" />
-                <span className="text-sm font-semibold text-green-400">What You Get</span>
-              </div>
-              <ul className="space-y-1">
-                {['Lifetime platform access', '3-level referral system (₹20/₹2/₹1)', 'Amazon affiliate tool', 'Monthly earnings distribution', 'UPI withdrawal from ₹50']?.map((feature) => (
-                  <li key={`feature-${feature}`} className="text-xs text-white/60 flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-green-400/60" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </div>

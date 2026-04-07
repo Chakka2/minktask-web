@@ -1,13 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebaseClient';
+import { getClientUserId } from '@/lib/user';
 
-// Backend: replace with Firestore withdrawals query for current user
-const WITHDRAWALS = [
-  { id: 'wd-001', amount: 150, fee: 2, net: 148, upiId: 'rahul@upi', requestedAt: '30/03/2026', processedAt: '30/03/2026', status: 'paid' },
-  { id: 'wd-002', amount: 100, fee: 2, net: 98, upiId: 'rahul@upi', requestedAt: '20/03/2026', processedAt: '21/03/2026', status: 'paid' },
-  { id: 'wd-003', amount: 200, fee: 2, net: 198, upiId: 'rahul@paytm', requestedAt: '01/04/2026', processedAt: null, status: 'pending' },
-];
+type WithdrawalRow = {
+  id: string;
+  amount: number;
+  fee: number;
+  netAmount: number;
+  upiId: string;
+  status: 'paid' | 'pending' | 'rejected';
+};
 
 const STATUS_STYLES: Record<string, { label: string; bg: string; color: string }> = {
   paid: { label: 'Paid', bg: 'rgba(34,197,94,0.12)', color: '#4ade80' },
@@ -16,11 +21,34 @@ const STATUS_STYLES: Record<string, { label: string; bg: string; color: string }
 };
 
 export default function WithdrawHistory() {
+  const [rows, setRows] = useState<WithdrawalRow[]>([]);
+
+  useEffect(() => {
+    const userId = getClientUserId();
+    const q = query(
+      collection(db, 'withdrawals'),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    return onSnapshot(q, (snap) => {
+      setRows(
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          amount: doc.data().amount,
+          fee: doc.data().fee,
+          netAmount: doc.data().netAmount,
+          upiId: doc.data().upiId,
+          status: doc.data().status,
+        })) as WithdrawalRow[]
+      );
+    });
+  }, []);
+
   return (
     <div className="glass-card p-6">
       <h3 className="text-base font-semibold text-white mb-5">Withdrawal History</h3>
 
-      {WITHDRAWALS.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-sm text-white/30">No withdrawal requests yet</p>
           <p className="text-xs text-white/20 mt-1">Your withdrawal history will appear here</p>
@@ -36,17 +64,17 @@ export default function WithdrawHistory() {
               </tr>
             </thead>
             <tbody>
-              {WITHDRAWALS.map((wd) => {
+              {rows.map((wd) => {
                 const style = STATUS_STYLES[wd.status];
                 return (
                   <tr key={wd.id} className="border-b border-white/5 hover:bg-white/3 transition-all">
                     <td className="py-3 pr-4">
                       <p className="text-sm font-bold text-white font-mono tabular-nums">₹{wd.amount}</p>
-                      <p className="text-xs text-white/30 font-mono">Net: ₹{wd.net} (−₹{wd.fee} fee)</p>
+                      <p className="text-xs text-white/30 font-mono">Net: ₹{wd.netAmount} (−₹{wd.fee} fee)</p>
                     </td>
                     <td className="py-3 pr-4 text-sm text-white/60 font-mono">{wd.upiId}</td>
-                    <td className="py-3 pr-4 text-sm text-white/50 font-mono">{wd.requestedAt}</td>
-                    <td className="py-3 pr-4 text-sm text-white/50 font-mono">{wd.processedAt ?? '—'}</td>
+                    <td className="py-3 pr-4 text-sm text-white/50 font-mono">—</td>
+                    <td className="py-3 pr-4 text-sm text-white/50 font-mono">—</td>
                     <td className="py-3">
                       <span className="status-badge" style={{ background: style.bg, color: style.color }}>{style.label}</span>
                     </td>

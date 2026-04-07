@@ -9,21 +9,18 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  defs,
-  linearGradient,
-  stop,
 } from 'recharts';
 
 // Backend: replace with Firestore earnings aggregated by date
 const EARNINGS_DATA = [
-  { date: 'Mar 25', referral: 12, affiliate: 0, total: 12 },
-  { date: 'Mar 26', referral: 0, affiliate: 0, total: 0 },
-  { date: 'Mar 27', referral: 26, affiliate: 0, total: 26 },
-  { date: 'Mar 28', referral: 12, affiliate: 0, total: 12 },
-  { date: 'Mar 29', referral: 0, affiliate: 0, total: 0 },
-  { date: 'Mar 30', referral: 14, affiliate: 42, total: 56 },
-  { date: 'Mar 31', referral: 12, affiliate: 0, total: 12 },
-  { date: 'Apr 1', referral: 12, affiliate: 0, total: 12 },
+  { date: 'Mar 25', referral: 12, bundle: 0, total: 12 },
+  { date: 'Mar 26', referral: 0, bundle: 0, total: 0 },
+  { date: 'Mar 27', referral: 26, bundle: 0, total: 26 },
+  { date: 'Mar 28', referral: 12, bundle: 0, total: 12 },
+  { date: 'Mar 29', referral: 0, bundle: 0, total: 0 },
+  { date: 'Mar 30', referral: 14, bundle: 42, total: 56 },
+  { date: 'Mar 31', referral: 12, bundle: 0, total: 12 },
+  { date: 'Apr 1', referral: 12, bundle: 0, total: 12 },
 ];
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number; name: string; color: string }[]; label?: string }) => {
@@ -58,7 +55,7 @@ export default function EarningsChart() {
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#22d3ee' }} />
-            <span className="text-xs text-white/50">Affiliate</span>
+            <span className="text-xs text-white/50">Bundle Sale</span>
           </div>
         </div>
       </div>
@@ -80,7 +77,7 @@ export default function EarningsChart() {
           <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
           <Tooltip content={<CustomTooltip />} />
           <Area type="monotone" dataKey="referral" stroke="#6366f1" strokeWidth={2} fill="url(#gradReferral)" />
-          <Area type="monotone" dataKey="affiliate" stroke="#22d3ee" strokeWidth={2} fill="url(#gradAffiliate)" />
+          <Area type="monotone" dataKey="bundle" stroke="#22d3ee" strokeWidth={2} fill="url(#gradAffiliate)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

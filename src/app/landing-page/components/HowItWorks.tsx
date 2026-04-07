@@ -1,21 +1,20 @@
 import React from 'react';
 import { CreditCard, Share2, IndianRupee, CheckCircle } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 const STEPS = [
-  { id: 'step-1', icon: CreditCard, label: 'Pay ₹29 Once', desc: 'Scan UPI QR and upload screenshot. Approved within minutes.' },
-  { id: 'step-2', icon: Share2, label: 'Share Your Link', desc: 'Get your unique referral link. Share on WhatsApp, Telegram, anywhere.' },
-  { id: 'step-3', icon: IndianRupee, label: 'Earn Commissions', desc: 'Earn ₹12, ₹2, ₹1 for each level of referrals automatically.' },
-  { id: 'step-4', icon: CheckCircle, label: 'Withdraw to UPI', desc: 'Request withdrawal anytime. Minimum ₹100. Paid within 24 hours.' },
+  { id: 'step-1', icon: CreditCard, label: 'Pay Entry QR', desc: 'Pay your exact QR amount (₹29.xx) to unlock your account.' },
+  { id: 'step-2', icon: Share2, label: 'Share Bundle Link', desc: 'Share your unique reel bundle referral links with your audience.' },
+  { id: 'step-3', icon: IndianRupee, label: 'Earn ₹50 / Sale', desc: 'Each successful referred reel bundle sale gives you a flat ₹50.' },
+  { id: 'step-4', icon: CheckCircle, label: 'Withdraw to UPI', desc: 'Request withdrawal from ₹50. A fixed ₹2 service fee is applied.' },
 ];
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 px-4">
+    <section id="how-it-works" className="py-28 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How It Works</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How It Works</h2>
           <p className="text-white/50 text-lg">4 simple steps to start earning</p>
         </div>
 
@@ -26,7 +25,7 @@ export default function HowItWorks() {
           {STEPS?.map((step, idx) => {
             const Icon = step?.icon;
             return (
-              <div key={step?.id} className="glass-card p-6 text-center relative">
+              <div key={step?.id} className="glass-card-hover p-7 text-center relative animate-fade-in-up">
                 <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 relative z-10">
                   <Icon size={22} className="text-white" />
                 </div>

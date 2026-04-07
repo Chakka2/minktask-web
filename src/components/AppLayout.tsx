@@ -4,28 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import {
-  LayoutDashboard,
-  Users,
-  Link2,
-  TrendingUp,
-  Wallet,
-  Menu,
-  X,
-  ChevronLeft,
-  Bell,
-  LogOut,
-  IndianRupee,
-} from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
+import { LayoutDashboard, Users, Link2, TrendingUp, Wallet, Menu, X, ChevronLeft, Bell, LogOut, IndianRupee, MessageCircle } from 'lucide-react';
+import { getClientUserId } from '@/lib/user';
 
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Referrals', href: '/referral-page', icon: Users },
-  { label: 'Amazon Tool', href: '/amazon-tool-page', icon: Link2 },
+  { label: 'Reel Bundles', href: '/reel-bundles', icon: Link2 },
   { label: 'Earnings', href: '/earnings-page', icon: TrendingUp },
   { label: 'Withdraw', href: '/withdraw-page', icon: Wallet },
+  { label: 'Support', href: '/support-page', icon: MessageCircle },
 ];
 
 interface AppLayoutProps {
@@ -36,6 +25,19 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+
+  React.useEffect(() => {
+    const userId = getClientUserId();
+    const poll = async () => {
+      const res = await fetch(`/api/entry/status?userId=${userId}`);
+      const data = await res.json();
+      setIsLocked(Boolean(data.isLocked));
+    };
+    poll();
+    const timer = setInterval(poll, 8000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="page-bg flex min-h-screen">
@@ -223,7 +225,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 p-4 lg:p-6 xl:p-8 max-w-screen-2xl w-full mx-auto">
-          {children}
+          {isLocked ? (
+            <div className="glass-card p-8 text-center">
+              <h2 className="text-xl text-white font-bold mb-2">Account Locked</h2>
+              <p className="text-sm text-white/50 mb-6">Complete the exact entry QR payment and wait for Firestore confirmation.</p>
+              <Link href="/landing-page#payment" className="btn-primary">
+                Go to Entry Payment
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
         </main>
 
         {/* Mobile Bottom Nav */}

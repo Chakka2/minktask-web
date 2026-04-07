@@ -6,24 +6,24 @@ import { Search, ChevronDown, ChevronUp } from 'lucide-react';
 // Backend: replace with Firestore transactions query for current user
 const ALL_TRANSACTIONS = [
   { id: 'txn-001', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Priya Kapoor', date: '01/04/2026' },
-  { id: 'txn-002', type: 'credit', source: 'affiliate', level: null, amount: 42, desc: 'Monthly affiliate distribution — March 2026', date: '31/03/2026' },
+  { id: 'txn-002', type: 'credit', source: 'bundle', level: null, amount: 42, desc: 'Reel bundle commission — March 2026', date: '31/03/2026' },
   { id: 'txn-003', type: 'credit', source: 'referral', level: 2, amount: 2, desc: 'L2 referral — Amit Singh', date: '31/03/2026' },
   { id: 'txn-004', type: 'debit', source: 'withdrawal', level: null, amount: 150, desc: 'Withdrawal to UPI — rahul@upi', date: '30/03/2026' },
   { id: 'txn-005', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Sunita Rao', date: '28/03/2026' },
   { id: 'txn-006', type: 'credit', source: 'referral', level: 3, amount: 1, desc: 'L3 referral — Deepa Nair', date: '27/03/2026' },
   { id: 'txn-007', type: 'credit', source: 'referral', level: 2, amount: 2, desc: 'L2 referral — Kiran Mehta', date: '26/03/2026' },
   { id: 'txn-008', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Rajesh Kumar', date: '25/03/2026' },
-  { id: 'txn-009', type: 'credit', source: 'affiliate', level: null, amount: 42, desc: 'Monthly affiliate distribution — Feb 2026', date: '28/02/2026' },
+  { id: 'txn-009', type: 'credit', source: 'bundle', level: null, amount: 42, desc: 'Reel bundle commission — Feb 2026', date: '28/02/2026' },
   { id: 'txn-010', type: 'credit', source: 'referral', level: 1, amount: 12, desc: 'L1 referral — Neha Verma', date: '24/03/2026' },
   { id: 'txn-011', type: 'credit', source: 'referral', level: 3, amount: 1, desc: 'L3 referral — Vikram Patil', date: '22/03/2026' },
   { id: 'txn-012', type: 'debit', source: 'withdrawal', level: null, amount: 100, desc: 'Withdrawal to UPI — rahul@upi', date: '20/03/2026' },
 ];
 
-type SourceFilter = 'all' | 'referral' | 'affiliate' | 'withdrawal';
+type SourceFilter = 'all' | 'referral' | 'bundle' | 'withdrawal';
 
 const SOURCE_STYLES: Record<string, { label: string; bg: string; color: string }> = {
   referral: { label: 'Referral', bg: 'rgba(99,102,241,0.15)', color: '#a5b4fc' },
-  affiliate: { label: 'Affiliate', bg: 'rgba(34,211,238,0.12)', color: '#67e8f9' },
+  bundle: { label: 'Bundle Sale', bg: 'rgba(34,211,238,0.12)', color: '#67e8f9' },
   withdrawal: { label: 'Withdrawal', bg: 'rgba(239,68,68,0.12)', color: '#fca5a5' },
 };
 
@@ -72,7 +72,7 @@ export default function TransactionHistoryTable() {
             />
           </div>
           <div className="flex gap-1">
-            {(['all', 'referral', 'affiliate', 'withdrawal'] as SourceFilter[]).map((f) => (
+            {(['all', 'referral', 'bundle', 'withdrawal'] as SourceFilter[]).map((f) => (
               <button
                 key={`txn-filter-${f}`}
                 onClick={() => handleFilterChange(f)}

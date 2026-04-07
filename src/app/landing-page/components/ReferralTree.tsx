@@ -9,7 +9,7 @@ export default function ReferralTree() {
           <p className="text-white/50 text-lg">One referral becomes many — each level earns you more</p>
         </div>
 
-        <div className="glass-card p-8 md:p-12">
+        <div className="glass-card-hover p-8 md:p-12 animate-fade-in-up">
           {/* You */}
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-lg mb-2 animate-pulse-glow">

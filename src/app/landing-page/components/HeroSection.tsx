@@ -1,36 +1,35 @@
 import React from 'react';
 
 import { ArrowRight, Star, Users, TrendingUp } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 export default function HeroSection() {
   return (
-    <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+    <section className="relative pt-32 pb-28 px-4 overflow-hidden">
       {/* Background glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-3xl pointer-events-none"
+      <div
+        className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, #6366f1, #3b82f6)' }} />
-      <div className="max-w-4xl mx-auto text-center relative z-10">
+      <div className="max-w-4xl mx-auto text-center relative z-10 animate-fade-in-up">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8"
-          style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}>
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8"
+          style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}
+        >
           <Star size={14} className="text-yellow-400" fill="currentColor" />
           <span className="text-white/80">Trusted by 12,400+ earners across India</span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
-          Pay <span className="gradient-text">₹29 Once.</span>
-          <br />
-          Earn <span className="gradient-text">Forever.</span>
+        <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
+          Creator Revenue Platform
         </h1>
 
-        <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Unlock a powerful 3-level referral system + Amazon affiliate tool.
-          Share your link, earn commissions, and get monthly affiliate revenue — all from one platform.
+        <p className="text-lg md:text-2xl text-white/70 max-w-3xl mx-auto mb-12 leading-relaxed">
+          Complete a secure one-time entry and grow your income through structured reel bundle referrals.
         </p>
 
         {/* Stats Row */}
-        <div className="flex flex-wrap justify-center gap-6 mb-10">
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
           {[
             { icon: Users, label: 'Active Earners', value: '12,400+' },
             { icon: TrendingUp, label: 'Total Paid Out', value: '₹18.4L+' },
@@ -38,8 +37,12 @@ export default function HeroSection() {
           ]?.map((stat) => {
             const Icon = stat?.icon;
             return (
-              <div key={`hero-stat-${stat?.label}`} className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.2)' }}>
+              <div
+                key={`hero-stat-${stat?.label}`}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl glass-card-hover animate-fade-in-up"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)' }}>
                   <Icon size={15} className="text-blue-400" />
                 </div>
                 <div className="text-left">

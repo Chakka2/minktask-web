@@ -7,10 +7,10 @@ export default function LandingFooter() {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2">
           <AppLogo size={28} />
-          <span className="font-bold text-lg gradient-text">Mintask</span>
+          <span className="font-bold text-lg gradient-text">EarnHub</span>
         </div>
         <p className="text-xs text-white/30 text-center">
-          © 2026 Mintask. All rights reserved. · This platform is for referral and affiliate earning purposes only.
+          © 2026 EarnHub. All rights reserved. · This platform is for referral and reel bundle earning purposes only.
         </p>
         <div className="flex items-center gap-4">
           <a href="#" className="text-xs text-white/40 hover:text-white transition-colors">Privacy</a>

@@ -1,12 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { Users, Link2, Wallet, TrendingUp } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
-
-
 const ACTIONS = [
   { id: 'qa-refer', label: 'Share Referral Link', href: '/referral-page', icon: Users, color: '#6366f1', bg: 'rgba(99,102,241,0.15)' },
-  { id: 'qa-tool', label: 'Generate Affiliate Link', href: '/amazon-tool-page', icon: Link2, color: '#22d3ee', bg: 'rgba(34,211,238,0.12)' },
+  { id: 'qa-tool', label: 'Open Reel Bundles', href: '/reel-bundles', icon: Link2, color: '#22d3ee', bg: 'rgba(34,211,238,0.12)' },
   { id: 'qa-withdraw', label: 'Request Withdrawal', href: '/withdraw-page', icon: Wallet, color: '#4ade80', bg: 'rgba(34,197,94,0.12)' },
   { id: 'qa-earnings', label: 'View All Earnings', href: '/earnings-page', icon: TrendingUp, color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
 ];

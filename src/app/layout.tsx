@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import '../styles/tailwind.css';
+import ToasterProvider from '@/components/ToasterProvider';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -8,8 +9,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'EarnHub — Earn ₹29 Unlocks Lifetime Income',
-  description: 'Pay ₹29 once to unlock a 3-level referral system, Amazon affiliate tool, and monthly earnings distribution. Start earning today.',
+  title: 'EarnHub — Reel Bundle Network',
+  description: '₹29 locked entry payment plus Reel Bundle referrals, withdrawals, and Telegram admin operations.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },
@@ -20,8 +21,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}
-</body>
+      <body className="min-h-screen bg-[hsl(222_47%_6%)] text-[hsl(210_40%_96%)] font-sans antialiased">
+        {children}
+        <ToasterProvider />
+      </body>
     </html>
   );
 }

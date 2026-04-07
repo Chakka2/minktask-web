@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { MousePointer, ArrowRight } from 'lucide-react';
 
-// Backend: replace with Firestore affiliateStats doc for current user
+// Backend: replace with Firestore reel bundle stats doc for current user
 const STATS = {
   totalClicks: 1204,
   thisMonthClicks: 247,
@@ -14,9 +14,9 @@ export default function AffiliateSnapshot() {
   return (
     <div className="glass-card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-white">Affiliate Snapshot</h3>
-        <Link href="/amazon-tool-page" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
-          Tool <ArrowRight size={12} />
+        <h3 className="text-base font-semibold text-white">Bundle Sales Snapshot</h3>
+        <Link href="/reel-bundles" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
+          Shop <ArrowRight size={12} />
         </Link>
       </div>
       <div className="flex items-center gap-3 p-4 rounded-xl mb-4" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.15)' }}>
@@ -25,14 +25,14 @@ export default function AffiliateSnapshot() {
         </div>
         <div>
           <p className="text-2xl font-bold text-white font-mono tabular-nums">{STATS?.totalClicks?.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-white/40">Total affiliate clicks</p>
+          <p className="text-xs text-white/40">Total bundle link visits</p>
         </div>
       </div>
       <div className="space-y-3">
         {[
-          { label: 'This Month Clicks', value: STATS?.thisMonthClicks?.toString(), color: '#22d3ee' },
-          { label: 'Pool Share', value: `${STATS?.poolSharePercent}%`, color: '#818cf8' },
-          { label: 'Est. Earnings (Apr)', value: `₹${STATS?.estimatedEarning}`, color: '#4ade80' },
+          { label: 'This Month Visits', value: STATS?.thisMonthClicks?.toString(), color: '#22d3ee' },
+          { label: 'Conversion', value: `${STATS?.poolSharePercent}%`, color: '#818cf8' },
+          { label: 'Est. Bundle Earnings', value: `₹${STATS?.estimatedEarning}`, color: '#4ade80' },
         ]?.map((item) => (
           <div key={`aff-${item?.label}`} className="flex items-center justify-between">
             <span className="text-xs text-white/50">{item?.label}</span>

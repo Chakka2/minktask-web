@@ -1,6 +1,5 @@
 import React from 'react';
 import { Users, MousePointer, TrendingUp, IndianRupee } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 const KPI_DATA = [
@@ -26,7 +25,7 @@ const KPI_DATA = [
   },
   {
     id: 'kpi-clicks',
-    label: 'Affiliate Clicks',
+    label: 'Bundle Link Visits',
     value: '1,204',
     change: '+87 this week',
     positive: true,
@@ -35,8 +34,8 @@ const KPI_DATA = [
     iconColor: '#22d3ee',
   },
   {
-    id: 'kpi-affiliate',
-    label: 'Affiliate Pool Share',
+    id: 'kpi-bundle',
+    label: 'Bundle Sale Earnings',
     value: '~₹42',
     change: 'Est. for April 2026',
     positive: null,
